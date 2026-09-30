@@ -1,0 +1,437 @@
+document.open(); document.write(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>skietedassie.com - Klap die Dassie!</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #d35400, #b9770e, #3e2723);
+            background-attachment: fixed;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            user-select: none;
+            cursor: crosshair;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        /* Doringbome Silhouette */
+        .doringboom {
+            position: absolute;
+            bottom: 0;
+            width: 140px;
+            height: 180px;
+            background: rgba(26, 15, 8, 0.85);
+            clip-path: polygon(50% 0%, 58% 35%, 85% 25%, 78% 50%, 100% 65%, 92% 100%, 8% 100%, 0% 65%, 22% 50%, 15% 25%, 42% 35%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        #tree-left { left: 10px; transform: scaleX(-1); }
+        #tree-right { right: 10px; }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #ffe082;
+            margin: 5px 0 0 0;
+            text-shadow: 2px 2px #000;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            color: #ffccbc;
+            font-style: italic;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px #000;
+        }
+        #stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            background: rgba(44, 29, 17, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #b7950b;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .stat-box span {
+            color: #f1c40f;
+            font-weight: bold;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 105px);
+            grid-template-rows: repeat(3, 105px);
+            gap: 12px;
+            justify-content: center;
+            background: rgba(78, 52, 46, 0.9);
+            padding: 15px;
+            border-radius: 12px;
+            border: 4px solid #1b120c;
+            width: max-content;
+            margin: 0 auto 10px auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+        .hole {
+            width: 105px;
+            height: 105px;
+            background: #110a06;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 10px 15px rgba(0,0,0,0.95);
+            border: 3px solid #2c1d11;
+        }
+        
+        /* Realistic Dassie styling */
+        .dassie {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            bottom: -95px;
+            left: 7px;
+            background: radial-gradient(circle at 40% 40%, #b8860b, #654321);
+            border-radius: 45% 45% 35% 35%;
+            transition: bottom 0.12s ease-in-out;
+            cursor: pointer;
+            border: 2px solid #4a2e18;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hole.up .dassie {
+            bottom: 5px;
+        }
+        .dassie-ears {
+            display: flex;
+            justify-content: space-between;
+            width: 65px;
+            margin-top: 4px;
+        }
+        .dassie-ear {
+            width: 14px;
+            height: 14px;
+            background: #8b5a2b;
+            border-radius: 50%;
+            border: 1px solid #4a2e18;
+        }
+        .dassie-eyes {
+            display: flex;
+            justify-content: space-between;
+            width: 42px;
+            margin-top: 6px;
+        }
+        .dassie-eye {
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+            position: relative;
+        }
+        .dassie-eye::after {
+            content: '';
+            position: absolute;
+            top: 1px; left: 1px;
+            width: 3px; height: 3px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        .dassie-nose {
+            width: 12px;
+            height: 8px;
+            background: #2b1810;
+            border-radius: 40%;
+            margin-top: 5px;
+        }
+        .dassie-mouth {
+            width: 20px;
+            height: 4px;
+            border-bottom: 2px solid #2b1810;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        #weapon-display {
+            font-size: 1.1rem;
+            margin: 8px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 6px;
+            border-radius: 5px;
+            border: 1px dashed #f1c40f;
+            color: #ffeb3b;
+        }
+        button.start-btn {
+            background-color: #d35400;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px #a04000;
+        }
+        button.start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 #a04000;
+        }
+        button.start-btn:disabled {
+            background-color: #7f8c8d;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        
+        /* Oom Jan se Gunsmith Shop */
+        #shop {
+            margin-top: 12px;
+            background: rgba(30, 18, 10, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #f1c40f;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+            text-align: left;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        #shop h3 {
+            margin: 0 0 8px 0;
+            color: #f1c40f;
+            text-align: center;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        .weapon-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #4a2e18;
+            margin: 6px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            border-left: 4px solid #f1c40f;
+            font-size: 0.85srem;
+        }
+        .weapon-item span {
+            max-width: 250px;
+            line-height: 1.2;
+        }
+        .weapon-item button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .weapon-item button:disabled {
+            background-color: #555;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="doringboom" id="tree-left"></div>
+    <div class="doringboom" id="tree-right"></div>
+
+    <div class="content-wrapper">
+        <h1>skietedassie.com</h1>
+        <div class="subtitle">"Karoo Sonsondergang... Klap daai dassie op die koppie!"</div>
+
+        <div id="stats-container">
+            <div class="stat-box">Telling: <span id="score">0</span></div>
+            <div class="stat-box">Beursie: <span id="currency">0</span> R</div>
+            <div class="stat-box">Tyd: <span id="timer">30</span>s</div>
+        </div>
+
+        <div id="game-board"></div>
+
+        <div id="weapon-display">Gepak: 🎯 Oom Jannie se .22</div>
+
+        <button class="start-btn" id="start-btn" onclick="startGame()">Begin Skiet Sesie!</button>
+
+        <div id="shop">
+            <h3>🛠️ Oom Jan se Gunsmith</h3>
+            <div class="weapon-item">
+                <span><b>Oom Jannie se .22</b><br><small>Standaard (1x punte)</small></span>
+                <button id="btn-w0" disabled>Besit</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Oom Koos se Boere .303</b><br><small>Klip-hard (+15R per hit)</small></span>
+                <button id="btn-w1" onclick="buyWeapon(1, 200, 'Oom Koos se Boere .303', 2)">200 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Tannie Sannie se Dubbelloop</b><br><small>Haelperd (+45R per hit)</small></span>
+                <button id="btn-w2" onclick="buyWeapon(2, 750, 'Tannie Sannie se Dubbelloop', 4)">750 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Bester se .270 Win</b><br><small>Vlakte-skoot (+120R per hit)</small></span>
+                <button id="btn-w3" onclick="buyWeapon(3, 2500, 'Bester se .270 Win', 8)">2,500 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Oom Gawie se 7x57 Mauser</b><br><small>Kalahari koning (+350R per hit)</small></span>
+                <button id="btn-w4" onclick="buyWeapon(4, 8000, 'Oom Gawie se 7x57 Mauser', 18)">8,000 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>".308 - Niks wat jag soos 'n .308 nie!"</b><br><small>Die Legendariese Roer! (+1,000R per hit)</small></span>
+                <button id="btn-w5" onclick="buyWeapon(5, 25000, '.308 - Niks wat jag soos \\'n .308 nie!', 40)">25,000 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Bult-Groot-Skaap .458 Lott</b><br><small>Skeur die klip op stukke! (+3,500R)</small></span>
+                <button id="btn-w6" onclick="buyWeapon(6, 100000, 'Bult-Groot-Skaap .458 Lott', 100)">100,000 R</button>
+            </div>
+            <div class="weapon-item">
+                <span><b>Groot Vyf Kaliber 700 Nitro Express</b><br><small>Absolute chaos! (+10,000R per hit)</small></span>
+                <button id="btn-w7" onclick="buyWeapon(7, 500000, '700 Nitro Express', 300)">500,000 R</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const BOARD_SIZE = 9;
+    let score = 0;
+    let currency = 0;
+    let timeLeft = 30;
+    let gameInterval = null;
+    let popupTimeout = null;
+    let isPlaying = false;
+    let activeHole = null;
+    let weaponBonus = 1;
+
+    const board = document.getElementById('game-board');
+    const scoreDisplay = document.getElementById('score');
+    const currencyDisplay = document.getElementById('currency');
+    const timerDisplay = document.getElementById('timer');
+    const startBtn = document.getElementById('start-btn');
+    const weaponDisplay = document.getElementById('weapon-display');
+
+    function createBoard() {
+        board.innerHTML = '';
+        for (let i = 0; i < BOARD_SIZE; i++) {
+            const hole = document.createElement('div');
+            hole.classList.add('hole');
+
+            const dassie = document.createElement('div');
+            dassie.classList.add('dassie');
+            dassie.innerHTML = \`
+                <div class="dassie-ears"><div class="dassie-ear"></div><div class="dassie-ear"></div></div>
+                <div class="dassie-eyes"><div class="dassie-eye"></div><div class="dassie-eye"></div></div>
+                <div class="dassie-nose"></div>
+                <div class="dassie-mouth"></div>
+            \`;
+            
+            dassie.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                hitDassie(hole, dassie);
+            });
+
+            hole.appendChild(dassie);
+            board.appendChild(hole);
+        }
+    }
+
+    function startGame() {
+        if (isPlaying) return;
+        isPlaying = true;
+        score = 0;
+        timeLeft = 30;
+        scoreDisplay.textContent = score;
+        timerDisplay.textContent = timeLeft;
+        startBtn.disabled = true;
+
+        gameInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+
+        showRandomDassie();
+    }
+
+    function showRandomDassie() {
+        if (!isPlaying) return;
+
+        if (activeHole) {
+            activeHole.classList.remove('up');
+        }
+
+        const holes = document.querySelectorAll('.hole');
+        const randomIndex = Math.floor(Math.random() * holes.length);
+        activeHole = holes[randomIndex];
+        activeHole.classList.add('up');
+
+        const speed = Math.max(450, 1050 - (score * 3)); 
+        popupTimeout = setTimeout(() => {
+            if (isPlaying) {
+                showRandomDassie();
+            }
+        }, speed);
+    }
+
+    function hitDassie(hole, dassie) {
+        if (!isPlaying) return;
+        if (hole.classList.contains('up')) {
+            hole.classList.remove('up');
+            clearTimeout(popupTimeout);
+
+            let pointsEarned = 10 * weaponBonus;
+            score += pointsEarned;
+            currency += pointsEarned;
+
+            scoreDisplay.textContent = score;
+            currencyDisplay.textContent = currency;
+
+            dassie.style.transform = "scale(0.75)";
+            setTimeout(() => dassie.style.transform = "scale(1)", 100);
+
+            showRandomDassie();
+        }
+    }
+
+    function endGame() {
+        isPlaying = false;
+        clearInterval(gameInterval);
+        clearTimeout(popupTimeout);
+        if (activeHole) activeHole.classList.remove('up');
+        startBtn.disabled = false;
+        alert('Tyd is op ou maat! Jou telling is ' + score + '. Jy het ' + currency + ' Rands verdien!');
+    }
+
+    function buyWeapon(id, cost, name, multiplier) {
+        if (currency >= cost) {
+            currency -= cost;
+            currencyDisplay.textContent = currency;
+            weaponBonus = multiplier;
+            weaponDisplay.textContent = "Gepak: 🎯 " + name;
+
+            const btn = document.getElementById('btn-w' + id);
+            btn.disabled = true;
+            btn.textContent = "Besit";
+            btn.style.backgroundColor = "#555";
+        } else {
+            alert("Nee man, jou beursie is te maer! Skiet nog dassies om daai geld bymekaar te maak!");
+        }
+    }
+
+    createBoard();
+</script>
+
+</body>
+</html>
+`); document.close();
